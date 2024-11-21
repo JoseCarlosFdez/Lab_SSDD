@@ -1,6 +1,9 @@
 import json
 import RemoteTypes as rt  # noqa: F401; pylint: disable=import-error
-
+import Ice  # noqa: F401; pylint: disable=import-error
+from typing import Optional
+from uuid import uuid4
+from remotetypes.iterable import Iterable
 
 class RemoteDict(rt.RDict):
     """Implementation of the RDict type."""
@@ -106,9 +109,9 @@ class RemoteDictIterator(rt.Iterable):
         self._index += 1
         return item
     
-def iter(self, current: Optional[Ice.Current] = None) -> rt.IterablePrx:
-    """Return a proxy to a remote iterator."""
-    adapter = current.adapter
-    iterator = RemoteDictIterator(self._data)
-    proxy = adapter.addWithUUID(iterator)
-    return rt.IterablePrx.checkedCast(proxy)
+    def iter(self, current=None) -> rt.IterablePrx:
+    
+        adapter = current.adapter
+        iterable = Iterable(list(self._data.keys()))
+        proxy = adapter.addWithUUID(iterable)
+        return rt.IterablePrx.checkedCast(proxy)
