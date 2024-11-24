@@ -1,6 +1,7 @@
 from typing import Optional
 import Ice
 import RemoteTypes as rt  # noqa: F401; pylint: disable=import-error
+from remotetypes.iterable import Iterable   
 
 
 class RemoteList(rt.RList):
@@ -15,6 +16,7 @@ class RemoteList(rt.RList):
         """
         self._storage = []
         self._identifier = identifier
+        self._hash_value = self._compute_hash()
 
     def identifier(self, current: Optional[Ice.Current] = None) -> str:
         """Return the identifier of the object."""
@@ -33,6 +35,7 @@ class RemoteList(rt.RList):
         if not isinstance(item, str):
             raise rt.TypeError("Only string items are allowed in RemoteList.")
         self._storage.append(item)
+        self._update_hash()
 
     def pop(self, index: Optional[int] = None, current: Optional[Ice.Current] = None) -> str:
         """
@@ -48,9 +51,9 @@ class RemoteList(rt.RList):
             rt.IndexError: If the index is out of bounds.
         """
         try:
-            if index is None:
-                return self._storage.pop()
-            return self._storage.pop(index)
+            item = self._storage.pop(index if index is not None else -1)
+            self._update_hash()
+            return item
         except IndexError as e:
             raise rt.IndexError(f"Index out of range: {index}") from e
 
@@ -84,6 +87,7 @@ class RemoteList(rt.RList):
         """
         try:
             self._storage.remove(item)
+            self._update_hash()
         except ValueError as e:
             raise rt.KeyError(f"Item not found: {item}") from e
 
@@ -97,7 +101,7 @@ class RemoteList(rt.RList):
 
     def hash(self, current: Optional[Ice.Current] = None) -> int:
         """Calculate a hash for the list's current state."""
-        return hash(tuple(self._storage))
+        return self._hash_value
 
     def iter(self, current: Optional[Ice.Current] = None) -> rt.IterablePrx:
         """
@@ -113,3 +117,11 @@ class RemoteList(rt.RList):
         iterable = Iterable(self._storage)
         proxy = adapter.addWithUUID(iterable)
         return rt.IterablePrx.checkedCast(proxy)
+
+    def _compute_hash(self) -> int:
+        """Compute a hash value for the current state of the list."""
+        return hash(tuple(self._storage))
+
+    def _update_hash(self) -> None:
+        """Update the stored hash value when the list is modified."""
+        self._hash_value = self._compute_hash()
