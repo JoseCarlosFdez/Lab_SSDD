@@ -1,5 +1,6 @@
 import RemoteTypes as rt  # noqa: F401; pylint: disable=import-error
 from typing import Optional
+import Ice
 
 
 class Iterable(rt.Iterable):
@@ -16,7 +17,7 @@ class Iterable(rt.Iterable):
         self._index = 0
         self._version = self._compute_version()
 
-    def next(self, current: Optional[rt.Current] = None) -> str:
+    def next(self, current: Optional[Ice.Current] = None) -> str:
         """
         Return the next item in the iteration.
 
@@ -34,7 +35,7 @@ class Iterable(rt.Iterable):
         self._index += 1
         return item
 
-    def reset(self, current: Optional[rt.Current] = None) -> None:
+    def reset(self, current: Optional[Ice.Current] = None) -> None:
         """
         Reset the iterator to the beginning of the data.
 
@@ -52,7 +53,7 @@ class Iterable(rt.Iterable):
         """
         return hash(tuple(self._data))
 
-    def update_data(self, new_data: list[str], current: Optional[rt.Current] = None) -> None:
+    def update_data(self, new_data: list[str], current: Optional[Ice.Current] = None) -> None:
         """
         Update the data of the iterable and reset the iterator.
 

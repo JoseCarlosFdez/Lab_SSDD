@@ -2,6 +2,8 @@ import RemoteTypes as rt  # noqa: F401; pylint: disable=import-error
 from remotetypes.remotedict import RemoteDict
 from remotetypes.remotelist import RemoteList
 from remotetypes.remoteset import RemoteSet
+import Ice   
+from typing import Optional 
 
 
 class Factory(rt.Factory):
@@ -13,7 +15,7 @@ class Factory(rt.Factory):
         """
         self.objects = {}
 
-    def get(self, typeName: rt.TypeName, identifier: str = None, current=None):
+    def get(self, typeName: rt.TypeName, identifier: Optional[str], current: Optional[Ice.Current])->rt.RTypePrx: 
         """
         Return an instance of the requested type.
 
@@ -47,7 +49,6 @@ class Factory(rt.Factory):
             raise rt.TypeError(f"Unknown type: {typeName}")
 
         # Register the new object with Ice and store its proxy
-        adapter = current.adapter
-        proxy = adapter.addWithUUID(obj)
+        proxy = rt.RTypePrx.uncheckedCast(current.adapter.addWithUUID(obj))
         self.objects[identifier] = proxy
         return proxy

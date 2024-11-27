@@ -24,7 +24,7 @@ class RemoteDict(rt.RDict):
         if self._identifier:
             self._load_from_file()
 
-    def setItem(self, key: str, item: str):
+    def setItem(self, key: str, item: str, current=None):
         """Set a key-value pair in the dictionary."""
         if not isinstance(key, str) or not isinstance(item, str):
             raise TypeError("Keys and values must be strings.")

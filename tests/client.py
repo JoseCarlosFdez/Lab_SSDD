@@ -1,15 +1,14 @@
-
+#!/usr/bin/env python3
 import sys
 import Ice
-import RemoteTypes as rt  # noqa: F401; pylint: disable=import-error
+from remotetypes import RemoteTypes as rt
 
 
 def main():
     with Ice.initialize(sys.argv) as communicator:
         # Configuración del proxy de la factoría desde la información del servidor
         factory_proxy = communicator.stringToProxy(
-            "factory -t -e 1.1:tcp -h 192.168.100.104 -p 42629 -t 60000"
-        )
+            "factory -t -e 1.1:tcp -h 172.19.171.124 -p 10000 -t 60000:tcp -h 172.17.0.1 -p 10000 -t 60000:tcp -h 172.18.0.1 -p 10000 -t 60000"        )
         
         # Intentamos conectar con la factoría remota
         factory = rt.FactoryPrx.checkedCast(factory_proxy)
@@ -23,9 +22,11 @@ def main():
         rlist_id = "test_list"
         rset_id = "test_set"
         
+        
         # Prueba de RDict
         rdict = factory.get(rt.TypeName.RDict, rdict_id)
-        print(f"Creado/obtenido RemoteDict con ID: {rdict.identifier()}")
+        print("factory")
+        rdict = rt.RDictPrx.checkedCast(rdict)
         
         rdict.setItem("clave1", "valor1")
         print(f"Obtenido valor de 'clave1': {rdict.getItem('clave1')}")
@@ -35,7 +36,7 @@ def main():
         
         # Prueba de RList
         rlist = factory.get(rt.TypeName.RList, rlist_id)
-        print(f"\nCreado/obtenido RemoteList con ID: {rlist.identifier()}")
+        rlist = rt.RSetPrx.checkedCast(rlist)
         
         rlist.append("elemento1")
         rlist.append("elemento2")
@@ -46,7 +47,7 @@ def main():
         
         # Prueba de RSet
         rset = factory.get(rt.TypeName.RSet, rset_id)
-        print(f"\nCreado/obtenido RemoteSet con ID: {rset.identifier()}")
+        rset = rt.RSetPrx.checkedCast(rset)
         
         rset.add("valor1")
         rset.add("valor2")
