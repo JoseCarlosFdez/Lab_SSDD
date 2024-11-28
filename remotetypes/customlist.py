@@ -1,10 +1,7 @@
-"""Implementation of custom sets."""
-
 from typing import Optional
 
-
-class StringSet(set):
-    """Set that only allows adding str objects."""
+class StringList(set):
+    
 
     def __init__(
         self,
@@ -12,22 +9,15 @@ class StringSet(set):
         force_upper_case: Optional[bool] = False,
         **kwargs: dict[str, object],
     ) -> None:
-        """Build an unordered collection of unique elements of type str.
-
-        StringSet() -> new empty StringSet object
-        StringSet(iterable) -> new StringSet object
-        """
+        
         self.upper_case = force_upper_case
         super().__init__(*args, **kwargs)
 
         for item in self:
             if not isinstance(item, str):
                 raise ValueError(f"All elements must be of type str, but got {type(item).__name__}")
-
-        
-
-    def add(self, item: str) -> None:
-        """Add an element to a set. Checks the element type to be a str."""
+            
+    def append (self, item: str) -> None:
         if not isinstance(item, str):
             raise ValueError(item)
 
@@ -35,7 +25,7 @@ class StringSet(set):
             item = item.upper()
 
         return super().add(item)
-
+        
     def __contains__(self, o: object) -> bool:
         """Overwrite the `in` operator.
 

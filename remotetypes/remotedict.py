@@ -24,21 +24,21 @@ class RemoteDict(rt.RDict):
         if self._identifier:
             self._load_from_file()
 
-    def setItem(self, key: str, item: str, current=None):
+    def setItem(self, key: str, item: str, current: Optional[Ice.Current] = None):
         """Set a key-value pair in the dictionary."""
         if not isinstance(key, str) or not isinstance(item, str):
             raise TypeError("Keys and values must be strings.")
         self._data[key] = item
         self._save_to_file()
 
-    def getItem(self, key: str) -> str:
+    def getItem(self, key: str,current: Optional[Ice.Current] = None) -> str:
         """Retrieve the value for a given key."""
         try:
             return self._data[key]
         except KeyError:
             raise KeyError(f"Key '{key}' not found.")
 
-    def pop(self, key: str) -> str:
+    def pop(self, key: str,current: Optional[Ice.Current] = None) -> str:
         """Retrieve and remove the value for a given key."""
         try:
             value = self._data.pop(key)
@@ -47,30 +47,30 @@ class RemoteDict(rt.RDict):
         except KeyError:
             raise KeyError(f"Key '{key}' not found.")
 
-    def remove(self, key: str):
+    def remove(self, key: str,current: Optional[Ice.Current] = None):
         """Remove a key-value pair from the dictionary."""
         if key not in self._data:
             raise KeyError(f"Key '{key}' not found.")
         del self._data[key]
         self._save_to_file()
 
-    def length(self) -> int:
+    def length(self,current: Optional[Ice.Current] = None) -> int:
         """Return the number of items in the dictionary."""
         return len(self._data)
 
-    def contains(self, key: str) -> bool:
+    def contains(self, key: str,current: Optional[Ice.Current] = None) -> bool:
         """Check if a key exists in the dictionary."""
         return key in self._data
 
-    def hash(self) -> int:
+    def hash(self,current: Optional[Ice.Current] = None) -> int:
         """Calculate a hash based on the dictionary's state."""
         return hash(frozenset(self._data.items()))
 
-    def iter(self):
+    def iter(self,current: Optional[Ice.Current] = None):
         """Return an iterator for the dictionary keys."""
         return RemoteDictIterator(self._data)
 
-    def _save_to_file(self):
+    def _save_to_file(self,current: Optional[Ice.Current] = None):
         """Persist the dictionary data to a file."""
         if not self._identifier:
             return  # Do not persist if no identifier is provided
@@ -84,7 +84,7 @@ class RemoteDict(rt.RDict):
         with open(self._persist_file, "w") as file:
             json.dump(all_data, file)
 
-    def _load_from_file(self):
+    def _load_from_file(self,current: Optional[Ice.Current] = None):
         """Load dictionary data from a file."""
         try:
             with open(self._persist_file, "r") as file:

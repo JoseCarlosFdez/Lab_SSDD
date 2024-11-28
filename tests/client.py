@@ -22,29 +22,6 @@ def main():
         rlist_id = "test_list"
         rset_id = "test_set"
         
-        
-        # Prueba de RDict
-        rdict = factory.get(rt.TypeName.RDict, rdict_id)
-        print("factory")
-        rdict = rt.RDictPrx.checkedCast(rdict)
-        
-        rdict.setItem("clave1", "valor1")
-        print(f"Obtenido valor de 'clave1': {rdict.getItem('clave1')}")
-        print(f"¿Contiene 'clave1'? {rdict.contains('clave1')}")
-        rdict.remove("clave1")
-        print(f"¿Contiene 'clave1' tras eliminar? {rdict.contains('clave1')}")
-        
-        # Prueba de RList
-        rlist = factory.get(rt.TypeName.RList, rlist_id)
-        rlist = rt.RSetPrx.checkedCast(rlist)
-        
-        rlist.append("elemento1")
-        rlist.append("elemento2")
-        print(f"Longitud de RList: {rlist.length()}")
-        print(f"Obtenido elemento en índice 0: {rlist.getItem(0)}")
-        print(f"Elemento eliminado: {rlist.pop()}")
-        print(f"Longitud tras pop: {rlist.length()}")
-        
         # Prueba de RSet
         rset = factory.get(rt.TypeName.RSet, rset_id)
         rset = rt.RSetPrx.checkedCast(rset)
@@ -57,6 +34,29 @@ def main():
         print(f"Longitud de RSet tras pop: {rset.length()}")
         
         print("\nPruebas finalizadas con éxito.")
+
+         # Prueba de RDict
+        rdict = factory.get(rt.TypeName.RDict, rdict_id)
+        print("factory")
+        rdict = rt.RDictPrx.checkedCast(rdict)
+        
+        rdict.setItem("clave1", "valor1")
+        
+        
+        rdict.remove("clave1")
+        print(f"¿Contiene 'clave1' tras eliminar? {rdict.contains('clave1')}")
+
+         # Prueba de RList
+        rlist = factory.get(rt.TypeName.RList, rlist_id)
+        rlist = rt.RListPrx.checkedCast(rlist)
+        
+        rlist.append("elemento1")
+        rlist.append("elemento2")
+        print(f"Longitud de RList: {rlist.length()}")
+        print(f"Obtenido elemento en índice 0: {rlist.getItem(0)}")
+        
+        
+        
 
 
 if __name__ == "__main__":
