@@ -1,6 +1,8 @@
 """Implementation of custom sets."""
-
+import Ice
+import RemoteTypes as rt  # noqa: F401; pylint: disable=import-error
 from typing import Optional
+
 
 
 class StringSet(set):
@@ -24,8 +26,6 @@ class StringSet(set):
             if not isinstance(item, str):
                 raise ValueError(f"All elements must be of type str, but got {type(item).__name__}")
 
-        
-
     def add(self, item: str) -> None:
         """Add an element to a set. Checks the element type to be a str."""
         if not isinstance(item, str):
@@ -46,5 +46,4 @@ class StringSet(set):
 
         if self.upper_case:
             o = o.upper()
-
         return super().__contains__(o)

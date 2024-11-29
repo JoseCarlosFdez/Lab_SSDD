@@ -1,28 +1,38 @@
 import json
-import RemoteTypes as rt  # noqa: F401; pylint: disable=import-error
-import Ice  # noqa: F401; pylint: disable=import-error
+import os
 from typing import Optional
-from uuid import uuid4
-from remotetypes.iterable import Iterable
+import Ice
+from remotetypes import RemoteTypes as rt
+from remotetypes.customdict import StringDict
 
 class RemoteDict(rt.RDict):
-    """Implementation of the RDict type."""
+    """Implementation of the RDict type with persistence."""
 
-    def __init__(self, identifier: str = None, persist_file: str = "rdict.json"):
-        """
-        Initialize the RemoteDict.
-
-        Args:
-            identifier (str): Optional identifier for the dictionary.
-            persist_file (str): File for persisting the dictionary data.
-        """
-        self._data = {}
-        self._identifier = identifier
+    def __init__(self, identifier: str, persist_file: str = "rdict.json") -> None:
+        """Initialize the RemoteDict."""
+        self._data = StringDict()
+        self.id_ = identifier
         self._persist_file = persist_file
+        self._load_from_file()
 
-        # Load existing data if identifier is provided
-        if self._identifier:
-            self._load_from_file()
+    def _load_from_file(self):
+        """Load the dictionary data from the persistence file."""
+        if os.path.exists(self._persist_file):
+            with open(self._persist_file, "r") as f:
+                data = json.load(f)
+                self._data = StringDict(data.get(self.id_, {}))
+
+    def _save_to_file(self):
+        """Save the dictionary data to the persistence file."""
+        if os.path.exists(self._persist_file):
+            with open(self._persist_file, "r") as f:
+                data = json.load(f)
+        else:
+            data = {}
+
+        data[self.id_] = dict(self._data)
+        with open(self._persist_file, "w") as f:
+            json.dump(data, f)
 
     def setItem(self, key: str, item: str, current: Optional[Ice.Current] = None):
         """Set a key-value pair in the dictionary."""
@@ -31,87 +41,65 @@ class RemoteDict(rt.RDict):
         self._data[key] = item
         self._save_to_file()
 
-    def getItem(self, key: str,current: Optional[Ice.Current] = None) -> str:
+    def getItem(self, key: str, current: Optional[Ice.Current] = None) -> str:
         """Retrieve the value for a given key."""
         try:
             return self._data[key]
         except KeyError:
-            raise KeyError(f"Key '{key}' not found.")
+            raise rt.KeyError(f"Key '{key}' not found.")
 
-    def pop(self, key: str,current: Optional[Ice.Current] = None) -> str:
+    def pop(self, key: str, current: Optional[Ice.Current] = None) -> str:
         """Retrieve and remove the value for a given key."""
         try:
             value = self._data.pop(key)
             self._save_to_file()
             return value
         except KeyError:
-            raise KeyError(f"Key '{key}' not found.")
+            raise rt.KeyError(f"Key '{key}' not found.")
 
-    def remove(self, key: str,current: Optional[Ice.Current] = None):
+    def remove(self, key: str, current: Optional[Ice.Current] = None):
         """Remove a key-value pair from the dictionary."""
         if key not in self._data:
-            raise KeyError(f"Key '{key}' not found.")
+            raise rt.KeyError(f"Key '{key}' not found.")
         del self._data[key]
         self._save_to_file()
 
-    def length(self,current: Optional[Ice.Current] = None) -> int:
+    def length(self, current: Optional[Ice.Current] = None) -> int:
         """Return the number of items in the dictionary."""
         return len(self._data)
 
-    def contains(self, key: str,current: Optional[Ice.Current] = None) -> bool:
+    def contains(self, key: str, current: Optional[Ice.Current] = None) -> bool:
         """Check if a key exists in the dictionary."""
         return key in self._data
 
-    def hash(self,current: Optional[Ice.Current] = None) -> int:
+    def hash(self, current: Optional[Ice.Current] = None) -> int:
         """Calculate a hash based on the dictionary's state."""
         return hash(frozenset(self._data.items()))
 
-    def iter(self,current: Optional[Ice.Current] = None):
+    def iter(self, current: Optional[Ice.Current] = None) -> rt.IterablePrx:
         """Return an iterator for the dictionary keys."""
-        return RemoteDictIterator(self._data)
+        if current is None or current.adapter is None:
+            raise ValueError("El adaptador no está disponible.")
 
-    def _save_to_file(self,current: Optional[Ice.Current] = None):
-        """Persist the dictionary data to a file."""
-        if not self._identifier:
-            return  # Do not persist if no identifier is provided
-        try:
-            with open(self._persist_file, "r") as file:
-                all_data = json.load(file)
-        except (FileNotFoundError, json.JSONDecodeError):
-            all_data = {}
+        # Crear un servant para el iterador
+        iterable_servant = RemoteDictIterator(self._data)
 
-        all_data[self._identifier] = self._data
-        with open(self._persist_file, "w") as file:
-            json.dump(all_data, file)
+        # Registrar el servant en el adaptador
+        proxy = current.adapter.addWithUUID(iterable_servant)
 
-    def _load_from_file(self,current: Optional[Ice.Current] = None):
-        """Load dictionary data from a file."""
-        try:
-            with open(self._persist_file, "r") as file:
-                all_data = json.load(file)
-            self._data = all_data.get(self._identifier, {})
-        except (FileNotFoundError, json.JSONDecodeError):
-            self._data = {}
-
+        # Devolver un proxy del tipo esperado
+        return rt.IterablePrx.checkedCast(proxy)
 
 class RemoteDictIterator(rt.Iterable):
     """Iterator for RemoteDict."""
 
     def __init__(self, data: dict):
-        self._data = list(data.keys())
+        self._data = list(data.items())  # Copia segura de las claves y valores
         self._index = 0
 
-    def next(self) -> str:
-        """Return the next key in the dictionary."""
+    def next(self, current: Optional[Ice.Current] = None) -> str:
         if self._index >= len(self._data):
-            raise StopIteration("No more items in the iterator.")
-        item = self._data[self._index]
+            raise rt.StopIteration  # No pasar ningún argumento
+        key, value = self._data[self._index]
         self._index += 1
-        return item
-    
-    def iter(self, current=None) -> rt.IterablePrx:
-    
-        adapter = current.adapter
-        iterable = Iterable(list(self._data.keys()))
-        proxy = adapter.addWithUUID(iterable)
-        return rt.IterablePrx.checkedCast(proxy)
+        return f"{key}:{value}"

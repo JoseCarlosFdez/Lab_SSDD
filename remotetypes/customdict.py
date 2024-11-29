@@ -1,20 +1,16 @@
-
-
 from typing import Optional, Any
+import Ice
+import RemoteTypes as rt  # noqa: F401; pylint: disable=import-error
+from remotetypes.iterable import Iterable
+
 
 class StringDict(dict):
-    """
-    A custom dictionary that enforces string keys and provides
+    """A custom dictionary that enforces string keys and provides
     additional functionality like optional uppercase transformation.
     """
 
     def __init__(self, *args: tuple[Any], force_upper_case: Optional[bool] = False, **kwargs: Any) -> None:
-        """
-        Initialize the CustomDict.
-
-        Args:
-            force_upper_case (bool): Whether to convert all keys to uppercase.
-        """
+        
         self.upper_case = force_upper_case
         super().__init__(*args, **kwargs)
 
@@ -26,10 +22,9 @@ class StringDict(dict):
                 self._convert_key_case(key)
 
     def _convert_key_case(self, key: str) -> str:
-        """
-        Helper function to convert a key to uppercase if the flag is set.
+        """ Helper function to convert a key to uppercase if the flag is set.
 
-        Args:
+        Args :
             key (str): The key to process.
 
         Returns:
@@ -39,7 +34,7 @@ class StringDict(dict):
             return key.upper()
         return key
 
-    def __setitem__(self, key: Any, value: Any) -> None:
+    def __setitem__(self, key: Any, value: Any ) -> None:
         """
         Set a key-value pair, enforcing string keys and applying case conversion.
 
@@ -70,13 +65,12 @@ class StringDict(dict):
         return super().__getitem__(key)
 
     def __contains__(self, key: Any) -> bool:
-        """
-        Check if a key is in the dictionary.
+        """Check if a key is in the dictionary.
 
-        Args:
+        Args :
             key (Any): The key to check.
 
-        Returns:
+        Returns :
             bool: True if the key exists, False otherwise.
         """
         if not isinstance(key, str):
@@ -85,13 +79,4 @@ class StringDict(dict):
         key = self._convert_key_case(key)
         return super().__contains__(key)
 
-    def update(self, *args: tuple[Any], **kwargs: Any) -> None:
-        """
-        Update the dictionary with key-value pairs.
-
-        Args:
-            *args: Positional arguments for update.
-            **kwargs: Keyword arguments for update.
-        """
-        for key, value in dict(*args, **kwargs).items():
-            self[key] = value
+    

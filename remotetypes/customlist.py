@@ -1,7 +1,6 @@
 from typing import Optional
 
 class StringList(set):
-    
 
     def __init__(
         self,
@@ -9,14 +8,14 @@ class StringList(set):
         force_upper_case: Optional[bool] = False,
         **kwargs: dict[str, object],
     ) -> None:
-        
+
         self.upper_case = force_upper_case
         super().__init__(*args, **kwargs)
 
         for item in self:
             if not isinstance(item, str):
                 raise ValueError(f"All elements must be of type str, but got {type(item).__name__}")
-            
+
     def append (self, item: str) -> None:
         if not isinstance(item, str):
             raise ValueError(item)

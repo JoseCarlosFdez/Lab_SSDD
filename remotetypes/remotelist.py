@@ -1,127 +1,94 @@
+import json
+import os
 from typing import Optional
 import Ice
-import RemoteTypes as rt  # noqa: F401; pylint: disable=import-error
-from remotetypes.iterable import Iterable   
-
+from remotetypes import RemoteTypes as rt
+from remotetypes.customlist import StringList
 
 class RemoteList(rt.RList):
-    """Implementation of the remote interface RList."""
+    """Implementation of the remote interface RList with persistence."""
 
-    def __init__(self, identifier: str) -> None:
+    def __init__(self, identifier: str, persist_file: str = "rlist.json") -> None:
         """
         Initialize a RemoteList with an empty list.
 
         Args:
             identifier (str): A unique identifier for this list instance.
         """
-        self._storage = []
-        self._identifier = identifier
-        self._hash_value = self._compute_hash()
+        self._data = []
+        self.id_ = identifier
+        self._persist_file = persist_file
+        self._load_from_file()
+
+    def _load_from_file(self):
+        """Load the list data from the persistence file."""
+        if os.path.exists(self._persist_file):
+            with open(self._persist_file, "r") as f:
+                data = json.load(f)
+                self._data = data.get(self.id_, [])
+
+    def _save_to_file(self):
+        """Save the list data to the persistence file."""
+        if os.path.exists(self._persist_file):
+            with open(self._persist_file, "r") as f:
+                data = json.load(f)
+        else:
+            data = {}
+
+        data[self.id_] = self._data
+        with open(self._persist_file, "w") as f:
+            json.dump(data, f)
 
     def identifier(self, current: Optional[Ice.Current] = None) -> str:
         """Return the identifier of the object."""
-        return self._identifier
+        return self.id_
 
-    def append(self, item: str, current: Optional[Ice.Current] = None) -> None:
-        """
-        Add a string to the end of the list.
-
-        Args:
-            item (str): The string to add.
-
-        Raises:
-            rt.TypeError: If the item is not a string.
-        """
+    def append(self, item: str, current: Optional[Ice.Current] = None):
         if not isinstance(item, str):
-            raise rt.TypeError("Only string items are allowed in RemoteList.")
-        self._storage.append(item)
-        self._update_hash()
+            raise TypeError("Items must be strings.")
+        self._data.append(item)
+        self._save_to_file()
 
-    def pop(self, index: Optional[int] = None, current: Optional[Ice.Current] = None) -> str:
-        """
-        Remove and return the item at the given index, or the last item if no index is specified.
-
-        Args:
-            index (Optional[int]): The index of the item to remove.
-
-        Returns:
-            str: The removed item.
-
-        Raises:
-            rt.IndexError: If the index is out of bounds.
-        """
-        try:
-            item = self._storage.pop(index if index is not None else -1)
-            self._update_hash()
-            return item
-        except IndexError as e:
-            raise rt.IndexError(f"Index out of range: {index}") from e
+    def remove(self, item: str, current: Optional[Ice.Current] = None):
+        if item not in self._data:
+            raise rt.KeyError(f"Item '{item}' not found.")
+        self._data.remove(item)
+        self._save_to_file()
 
     def getItem(self, index: int, current: Optional[Ice.Current] = None) -> str:
-        """
-        Get the item at the specified index.
-
-        Args:
-            index (int): The index of the item.
-
-        Returns:
-            str: The item at the given index.
-
-        Raises:
-            rt.IndexError: If the index is out of bounds.
-        """
         try:
-            return self._storage[index]
-        except IndexError as e:
-            raise rt.IndexError(f"Index out of range: {index}") from e
-
-    def remove(self, item: str, current: Optional[Ice.Current] = None) -> None:
-        """
-        Remove the first occurrence of the specified item from the list.
-
-        Args:
-            item (str): The item to remove.
-
-        Raises:
-            rt.KeyError: If the item is not found in the list.
-        """
-        try:
-            self._storage.remove(item)
-            self._update_hash()
-        except ValueError as e:
-            raise rt.KeyError(f"Item not found: {item}") from e
+            return self._data[index]
+        except IndexError:
+            raise rt.KeyError(f"Index '{index}' out of range.")
 
     def length(self, current: Optional[Ice.Current] = None) -> int:
-        """Return the number of items in the list."""
-        return len(self._storage)
-
-    def contains(self, item: str, current: Optional[Ice.Current] = None) -> bool:
-        """Check if the item exists in the list."""
-        return item in self._storage
+        return len(self._data)
 
     def hash(self, current: Optional[Ice.Current] = None) -> int:
-        """Calculate a hash for the list's current state."""
-        return self._hash_value
+        return hash(tuple(self._data))
+
+    def pop(self, current: Optional[Ice.Current] = None) -> str:
+        if not self._data:
+            raise rt.KeyError("List is empty.")
+        item = self._data.pop()
+        self._save_to_file()
+        return item
 
     def iter(self, current: Optional[Ice.Current] = None) -> rt.IterablePrx:
-        """
-        Return an Iterable proxy for iterating over the list items.
-
-        Args:
-            current (Optional[Ice.Current]): Current Ice runtime context.
-
-        Returns:
-            rt.IterablePrx: Proxy to the remote Iterable instance.
-        """
-        adapter = current.adapter
-        iterable = Iterable(self._storage)
-        proxy = adapter.addWithUUID(iterable)
+        if current is None or current.adapter is None:
+            raise ValueError("Adapter is not available.")
+        iterable_servant = RemoteListIterator(self._data)
+        proxy = current.adapter.addWithUUID(iterable_servant)
         return rt.IterablePrx.checkedCast(proxy)
 
-    def _compute_hash(self) -> int:
-        """Compute a hash value for the current state of the list."""
-        return hash(tuple(self._storage))
+class RemoteListIterator(rt.Iterable):
+    def __init__(self, data: list):
+        self._data = data
+        self._index = 0
 
-    def _update_hash(self) -> None:
-        """Update the stored hash value when the list is modified."""
-        self._hash_value = self._compute_hash()
+    def next(self, current: Optional[Ice.Current] = None) -> str:
+        if self._index >= len(self._data):
+            raise rt.StopIteration
+        item = self._data[self._index]
+        self._index += 1
+        return item
