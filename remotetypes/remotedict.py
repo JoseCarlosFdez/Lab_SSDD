@@ -49,13 +49,12 @@ class RemoteDict(rt.RDict):
             raise rt.KeyError(f"Key '{key}' not found.")
 
     def pop(self, key: str, current: Optional[Ice.Current] = None) -> str:
-        """Retrieve and remove the value for a given key."""
-        try:
-            value = self._data.pop(key)
-            self._save_to_file()
-            return value
-        except KeyError:
+        if key not in self._data:
             raise rt.KeyError(f"Key '{key}' not found.")
+        value = self._data.pop(key)
+        self._save_to_file()
+
+        return value
 
     def remove(self, key: str, current: Optional[Ice.Current] = None):
         """Remove a key-value pair from the dictionary."""
@@ -80,26 +79,20 @@ class RemoteDict(rt.RDict):
         """Return an iterator for the dictionary keys."""
         if current is None or current.adapter is None:
             raise ValueError("El adaptador no está disponible.")
-
-        # Crear un servant para el iterador
         iterable_servant = RemoteDictIterator(self._data)
-
-        # Registrar el servant en el adaptador
         proxy = current.adapter.addWithUUID(iterable_servant)
-
-        # Devolver un proxy del tipo esperado
         return rt.IterablePrx.checkedCast(proxy)
 
 class RemoteDictIterator(rt.Iterable):
     """Iterator for RemoteDict."""
 
     def __init__(self, data: dict):
-        self._data = list(data.items())  # Copia segura de las claves y valores
+        self._data = list(data.items()) 
         self._index = 0
 
     def next(self, current: Optional[Ice.Current] = None) -> str:
         if self._index >= len(self._data):
-            raise rt.StopIteration  # No pasar ningún argumento
+            raise rt.StopIteration 
         key, value = self._data[self._index]
         self._index += 1
         return f"{key}:{value}"

@@ -1,66 +1,43 @@
 import RemoteTypes as rt  # noqa: F401; pylint: disable=import-error
-from typing import Optional
-import Ice
 
 
-class Iterable(rt.Iterable):
+
+class Iterable:
     """Implementation of the Iterable interface."""
 
     def __init__(self, data: list[str]) -> None:
-        """
-        Initialize the Iterable with a list of items.
-
-        Args:
-            data (list[str]): List of items to iterate over.
-        """
+        """Initialize the Iterable with a list of items."""
         self._data = data
         self._index = 0
         self._version = self._compute_version()
 
-    def next(self, current: Optional[Ice.Current] = None) -> str:
-        """
-        Return the next item in the iteration.
+    def __iter__(self):
+        """Return the iterator object itself (self)."""
+        return self
 
-        Raises:
-            rt.StopIteration: If there are no more items.
-            rt.CancelIteration: If the underlying data is modified during iteration.
-        """
+    def __next__(self):
+        """Return the next item from the iterator."""
+        # Verifica si los datos han cambiado desde la última iteración
         if self._version != self._compute_version():
-            raise rt.CancelIteration("The iterable was modified during iteration.")
-
+            raise StopIteration("The iterable was modified during iteration.")
+        
         if self._index >= len(self._data):
-            raise rt.StopIteration()
-
+            raise StopIteration()
+        
         item = self._data[self._index]
         self._index += 1
         return item
 
-    def reset(self, current: Optional[Ice.Current] = None) -> None:
-        """
-        Reset the iterator to the beginning of the data.
-
-        Args:
-            current (Optional[rt.Current]): Current Ice runtime context.
-        """
+    def reset(self):
+        """Reset the iterator to the beginning of the data."""
         self._index = 0
 
     def _compute_version(self) -> int:
-        """
-        Compute a version hash for the current state of the data.
-
-        Returns:
-            int: A hash representing the current version of the data.
-        """
+        """Compute a version hash for the current state of the data."""
         return hash(tuple(self._data))
 
-    def update_data(self, new_data: list[str], current: Optional[Ice.Current] = None) -> None:
-        """
-        Update the data of the iterable and reset the iterator.
-
-        Args:
-            new_data (list[str]): The new list of items to iterate over.
-            current (Optional[rt.Current]): Current Ice runtime context.
-        """
+    def update_data(self, new_data: list[str]) -> None:
+        """Update the data of the iterable and reset the iterator."""
         self._data = new_data
         self._index = 0
-        self._version = self._compute_version()
+        self._version = self._compute_version()  # Recalcular la versión

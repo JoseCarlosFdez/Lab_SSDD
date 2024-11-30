@@ -3,19 +3,11 @@ import os
 from typing import Optional
 import Ice
 from remotetypes import RemoteTypes as rt
-from remotetypes.customlist import StringList
-
 class RemoteList(rt.RList):
     """Implementation of the remote interface RList with persistence."""
 
     def __init__(self, identifier: str, persist_file: str = "rlist.json") -> None:
-        """
-        Initialize a RemoteList with an empty list.
-
-        Args:
-            identifier (str): A unique identifier for this list instance.
-        """
-        self._data = []
+        self._data: list[str] = []
         self.id_ = identifier
         self._persist_file = persist_file
         self._load_from_file()
@@ -67,12 +59,39 @@ class RemoteList(rt.RList):
     def hash(self, current: Optional[Ice.Current] = None) -> int:
         return hash(tuple(self._data))
 
-    def pop(self, current: Optional[Ice.Current] = None) -> str:
+    def pop(self, index: Optional[int] = Ice.Unset, current: Optional[Ice.Current] = None) -> str:
+        """Remove and return an item from the list.
+
+        Args :
+            index (Optional[int]): The index of the item to remove. If not set, remove the last item.
+
+        Returns :
+            str: The removed item.
+
+        Raises :
+            rt.KeyError: If the list is empty or the index is out of range.
+        """
         if not self._data:
             raise rt.KeyError("List is empty.")
-        item = self._data.pop()
+        if index is Ice.Unset:
+            index = None  # Considera como si no se hubiese pasado el índice.
+        try:
+            if index is None:
+                item = self._data.pop()  # Quitar el último elemento
+            else:
+                item = self._data.pop(index)  # Quitar el elemento en el índice dado
+        except IndexError:
+            raise rt.KeyError(f"Index '{index}' out of range.")
+        except TypeError:
+            raise rt.KeyError(f"Invalid index type: '{type(index)}'.")
+
         self._save_to_file()
         return item
+
+    def contains(self, item: str, current: Optional[Ice.Current] = None) -> bool:
+        """Devuelve True si el elemento está en la lista, False en caso contrario."""
+        return item in self._data
+
 
     def iter(self, current: Optional[Ice.Current] = None) -> rt.IterablePrx:
         if current is None or current.adapter is None:

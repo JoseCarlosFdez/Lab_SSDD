@@ -10,7 +10,7 @@ class Factory(rt.Factory):
 
     def __init__(self) -> None:
         """Initialize the Factory with an empty registry of objects."""
-        self._data = {}
+        self._data: dict[str, rt.RTypePrx] = {}
 
     def get(self, typeName: rt.TypeName, identifier: Optional[str], current: Optional[Ice.Current] = None) -> rt.RTypePrx:
         """Get or create a remote object based on the typeName and identifier."""
@@ -35,13 +35,21 @@ class Factory(rt.Factory):
         else:
             raise rt.TypeError(f"Unknown type: {typeName}")
 
-        # Register the new object with Ice
-        print(f"Creando objeto {typeName} con identificador {identifier}")
+        # Register the object with UUID
         proxy = current.adapter.addWithUUID(obj)
-        proxy = rt.RTypePrx.checkedCast(proxy)
-        if not proxy:
-            raise RuntimeError("Error al registrar el objeto remoto.")
-        self._data[identifier] = proxy
-        print(f"Objeto registrado: {proxy}")
 
+        # Check if proxy is None immediately after addWithUUID
+        if proxy is None:
+            raise RuntimeError("Error al registrar el objeto remoto, el proxy es None.")
+
+        # Ensure that the proxy is valid before attempting to cast
+        proxy = rt.RTypePrx.checkedCast(proxy)
+
+        # Handle invalid cast
+        if not proxy:
+            raise RuntimeError("Error al hacer checkedCast del proxy.")
+
+        # Store the proxy in the registry
+        self._data[identifier] = proxy
         return proxy
+

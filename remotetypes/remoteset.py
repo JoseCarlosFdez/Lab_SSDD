@@ -5,6 +5,7 @@ import Ice
 from remotetypes import RemoteTypes as rt
 from remotetypes.customset import StringSet
 
+
 class RemoteSet(rt.RSet):
     """Implementation of the RSet type with persistence."""
 
@@ -63,12 +64,11 @@ class RemoteSet(rt.RSet):
 
     def pop(self, current: Optional[Ice.Current] = None) -> str:
         """Remove and return an arbitrary item from the set."""
-        try:
-            item = self._data.pop()
-            self._save_to_file()
-            return item
-        except KeyError:
-            raise rt.KeyError("The set is empty.")
+        if len(self._data) == 0:
+            raise rt.KeyError("The set is empty.")  # Lanza un KeyError si está vacío
+        item = self._data.pop()
+        self._save_to_file()
+        return item
 
     def iter(self, current: Optional[Ice.Current] = None) -> rt.IterablePrx:
         """Return an iterator for the set items."""
@@ -83,6 +83,7 @@ class RemoteSet(rt.RSet):
 
         # Return a proxy of the expected type
         return rt.IterablePrx.checkedCast(proxy)
+
 
 class RemoteSetIterator(rt.Iterable):
     """Iterator for RemoteSet."""
