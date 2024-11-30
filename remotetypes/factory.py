@@ -1,4 +1,4 @@
-import RemoteTypes as rt  # noqa: F401; pylint: disable=import-error
+from . import RemoteTypes as rt  # noqa: D100, F401
 from remotetypes.remotedict import RemoteDict
 from remotetypes.remotelist import RemoteList
 from remotetypes.remoteset import RemoteSet
@@ -12,7 +12,7 @@ class Factory(rt.Factory):
         """Initialize the Factory with an empty registry of objects."""
         self._data: dict[str, rt.RTypePrx] = {}
 
-    def get(self, typeName: rt.TypeName, identifier: Optional[str], current: Optional[Ice.Current] = None) -> rt.RTypePrx:
+    def get(self, typeName: rt.TypeName, identifier: Optional[str], current: Optional[Ice.Current] = None)->rt.RTypePrx:
         """Get or create a remote object based on the typeName and identifier."""
         if not identifier:
             identifier = str(uuid.uuid4())

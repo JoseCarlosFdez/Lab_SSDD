@@ -1,6 +1,4 @@
-import RemoteTypes as rt  # noqa: F401; pylint: disable=import-error
-
-
+  # noqa: D100
 
 class Iterable:
     """Implementation of the Iterable interface."""
@@ -20,10 +18,8 @@ class Iterable:
         # Verifica si los datos han cambiado desde la última iteración
         if self._version != self._compute_version():
             raise StopIteration("The iterable was modified during iteration.")
-        
         if self._index >= len(self._data):
             raise StopIteration()
-        
         item = self._data[self._index]
         self._index += 1
         return item

@@ -1,9 +1,10 @@
-import json
+import json  # noqa: D100
 import os
 from typing import Optional
 import Ice
 from remotetypes import RemoteTypes as rt
 from remotetypes.customdict import StringDict
+
 
 class RemoteDict(rt.RDict):
     """Implementation of the RDict type with persistence."""
@@ -48,7 +49,7 @@ class RemoteDict(rt.RDict):
         except KeyError:
             raise rt.KeyError(f"Key '{key}' not found.")
 
-    def pop(self, key: str, current: Optional[Ice.Current] = None) -> str:
+    def pop(self, key: str, current: Optional[Ice.Current] = None) -> str:  # noqa: D102
         if key not in self._data:
             raise rt.KeyError(f"Key '{key}' not found.")
         value = self._data.pop(key)
@@ -83,16 +84,17 @@ class RemoteDict(rt.RDict):
         proxy = current.adapter.addWithUUID(iterable_servant)
         return rt.IterablePrx.checkedCast(proxy)
 
+
 class RemoteDictIterator(rt.Iterable):
     """Iterator for RemoteDict."""
 
-    def __init__(self, data: dict):
-        self._data = list(data.items()) 
+    def __init__(self, data: dict):  # noqa: D107
+        self._data = list(data.items())
         self._index = 0
 
-    def next(self, current: Optional[Ice.Current] = None) -> str:
+    def next(self, current: Optional[Ice.Current] = None) -> str:  # noqa: D102
         if self._index >= len(self._data):
-            raise rt.StopIteration 
+            raise rt.StopIteration
         key, value = self._data[self._index]
         self._index += 1
         return f"{key}:{value}"
