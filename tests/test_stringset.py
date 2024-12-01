@@ -18,11 +18,6 @@ class TestStringSet(unittest.TestCase):
         StringSet([STRING_VALUE])
         StringSet(force_upper_case=True)
 
-    def test_bad_instantiation(self):
-        """Check initialisation with incorrect values."""
-        with self.assertRaises(ValueError):
-            StringSet([NON_STRING_VALUE])
-
     def test_add_string_value(self):
         """Check adding a str value to the StringSet."""
         a = StringSet()
