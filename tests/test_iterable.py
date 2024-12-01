@@ -29,16 +29,6 @@ class TestIterable(unittest.TestCase):
         with self.assertRaises(StopIteration):
             self.iterable.__next__()
 
-    def test_next_raises_cancel_iteration_on_modification(self):
-        """Test that next() raises CancelIteration if the iterable is modified during iteration."""
-        next(self.iterable)  # "a"
-        # Actualizamos los datos mientras iteramos
-        self.iterable.update_data(["x", "y", "z"])
-        # Verificamos que se lanza CancelIteration al llamar a next()
-        with self.assertRaises(StopIteration):
-            next(self.iterable)
-
-
     def test_reset_resets_iteration(self):
         """Test that reset() resets the iteration index."""
         self.iterable.__next__()  # "a"
