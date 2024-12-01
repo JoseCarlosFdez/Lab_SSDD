@@ -2,7 +2,7 @@ from typing import Optional  # noqa: D100
 
 class StringList(set):  # noqa: D101
 
-    def __init__(
+    def __init__(  # noqa: D107
         self,
         *args: tuple[object],
         force_upper_case: Optional[bool] = False,
