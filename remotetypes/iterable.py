@@ -1,6 +1,4 @@
-  # noqa: D100
-
-class Iterable:
+class Iterable:  # noqa: D100
     """Implementation of the Iterable interface."""
 
     def __init__(self, data: list[str]) -> None:

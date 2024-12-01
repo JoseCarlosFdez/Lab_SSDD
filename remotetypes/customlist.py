@@ -1,6 +1,6 @@
-from typing import Optional
+from typing import Optional  # noqa: D100
 
-class StringList(set):
+class StringList(set):  # noqa: D101
 
     def __init__(
         self,
@@ -16,7 +16,7 @@ class StringList(set):
             if not isinstance(item, str):
                 raise ValueError(f"All elements must be of type str, but got {type(item).__name__}")
 
-    def append (self, item: str) -> None:
+    def append (self, item: str) -> None:  # noqa: D102
         if not isinstance(item, str):
             raise ValueError(item)
 
@@ -24,7 +24,7 @@ class StringList(set):
             item = item.upper()
 
         return super().add(item)
-        
+
     def __contains__(self, o: object) -> bool:
         """Overwrite the `in` operator.
 

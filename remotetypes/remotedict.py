@@ -19,23 +19,23 @@ class RemoteDict(rt.RDict):
     def _load_from_file(self):
         """Load the dictionary data from the persistence file."""
         if os.path.exists(self._persist_file):
-            with open(self._persist_file, "r") as f:
+            with open(self._persist_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 self._data = StringDict(data.get(self.id_, {}))
 
     def _save_to_file(self):
         """Save the dictionary data to the persistence file."""
         if os.path.exists(self._persist_file):
-            with open(self._persist_file, "r") as f:
+            with open(self._persist_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
         else:
             data = {}
 
         data[self.id_] = dict(self._data)
-        with open(self._persist_file, "w") as f:
+        with open(self._persist_file, "w", encoding="utf-8") as f:
             json.dump(data, f)
 
-    def setItem(self, key: str, item: str, current: Optional[Ice.Current] = None):
+    def setItem(self,key: str, item: str, current: Optional[Ice.Current] = None):
         """Set a key-value pair in the dictionary."""
         if not isinstance(key, str) or not isinstance(item, str):
             raise TypeError("Keys and values must be strings.")
@@ -92,7 +92,7 @@ class RemoteDictIterator(rt.Iterable):
         self._data = list(data.items())
         self._index = 0
 
-    def next(self, current: Optional[Ice.Current] = None) -> str:  # noqa: D102
+    def next(self,current: Optional[Ice.Current] = None) -> str:  # noqa: D102
         if self._index >= len(self._data):
             raise rt.StopIteration
         key, value = self._data[self._index]
