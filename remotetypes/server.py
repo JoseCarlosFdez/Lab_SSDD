@@ -16,16 +16,25 @@ class Server(Ice.Application):
         self.logger = logging.getLogger(__file__)
 
     def run(self, args: list[str]) -> int:
-        """Execute the main server actions..
+        """Execute the main server actions."""
 
-        It will initialise the needed middleware elements in order to execute the server.
-        """
-        factory_servant = Factory()
+        # Cargar propiedades de Ice desde el archivo de configuración
+        properties = self.communicator().getProperties()
+        self.logger.info(f"Properties: {properties}")
+
+        # Crear el adaptador sin propiedades
         adapter = self.communicator().createObjectAdapter("remotetypes")
+
+        # Añadir el servant al adaptador
+        factory_servant = Factory()
         proxy = adapter.add(factory_servant, self.communicator().stringToIdentity("factory"))
         self.logger.info('Proxy: "%s"', proxy)
 
+        # Activar el adaptador
         adapter.activate()
         self.shutdownOnInterrupt()
         self.communicator().waitForShutdown()
+
         return 0
+
+
