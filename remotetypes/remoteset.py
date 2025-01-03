@@ -2,7 +2,7 @@ import json
 import os
 from typing import Optional
 import Ice
-from remotetypes import RemoteTypes as rt
+from remotetypes import remotetypes_ice as rt
 from remotetypes.customset import StringSet
 
 

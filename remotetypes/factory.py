@@ -7,7 +7,7 @@ from remotetypes.remotedict import RemoteDict
 from remotetypes.remotelist import RemoteList
 from remotetypes.remoteset import RemoteSet
 
-from . import RemoteTypes as rt  # noqa: D100, F401
+from remotetypes import remotetypes_ice as rt
 
 
 class Factory(rt.Factory):
