@@ -2,7 +2,7 @@ import json
 import os
 from typing import Optional
 import Ice
-from remotetypes import remotetypes_ice as rt
+from remotetypes import RemoteTypes as rt
 class RemoteList(rt.RList):
     """Implementation of the remote interface RList with persistence."""
 

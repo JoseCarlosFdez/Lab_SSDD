@@ -7,7 +7,7 @@ from remotetypes.remotedict import RemoteDict
 from remotetypes.remotelist import RemoteList
 from remotetypes.remoteset import RemoteSet
 
-from remotetypes import remotetypes_ice as rt
+from remotetypes import RemoteTypes as rt
 
 
 class Factory(rt.Factory):
@@ -43,3 +43,5 @@ class Factory(rt.Factory):
             raise RuntimeError("Error al hacer checkedCast del proxy.")
         self._data[identifier] = proxy
         return proxy
+    
+    

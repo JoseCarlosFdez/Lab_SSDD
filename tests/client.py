@@ -3,7 +3,7 @@ from confluent_kafka import Consumer, Producer, KafkaError
 import sys
 import logging
 import Ice
-from remotetypes import remotetypes_ice as rt
+from remotetypes import RemoteTypes as rt
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -128,10 +128,13 @@ class KafkaClient:
                     break
 
             logging.info(f"Mensaje recibido: {msg.value().decode('utf-8')}")
+            
+            # Procesar el mensaje
             processed_message = self.process_message(msg.value().decode('utf-8'))
             producer.produce(self.output_topic, processed_message.encode('utf-8'))
             producer.flush()
             logging.debug(f"Mensaje procesado y enviado: {processed_message}")
+
 
     def main(self):
         try:
