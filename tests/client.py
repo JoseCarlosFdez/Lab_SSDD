@@ -40,8 +40,29 @@ class KafkaClient:
             operation = json.loads(message)
             logging.info(f"Operación recibida: {operation}")
 
+            # Mapeo de tipo de objeto
+            type_map = {
+                "RSet": rt.TypeName.RSet,
+                "RList": rt.TypeName.RList,
+                "RDict": rt.TypeName.RDict
+            }
+
+            # Validar object_type
+            object_type = operation["object_type"]
+            if object_type not in type_map:
+                raise ValueError(f"Tipo de objeto desconocido: {object_type}")
+
+            # Obtener el tipo enumerado y el identificador
+            type_name = type_map[object_type]
+            identifier = operation.get("object_identifier")  # Puede ser None si no está definido
+
             # Llamar al servidor remoto a través del proxy
-            result = self.proxy.get(operation["object_type"], operation.get("object_identifier"))
+            proxy_result = self.proxy.get(type_name, identifier)
+
+            # Convertir el resultado del proxy a un formato serializable
+            result = {
+                "proxy": str(proxy_result)  # Convertimos el objeto a cadena
+            }
 
             logging.info(f"Respuesta del servidor: {result}")
             return json.dumps({"status": "ok", "result": result})
