@@ -1,0 +1,5 @@
+
+zeroc-ice
+confluent_kafka
+kafka-python
+libbz2-dev  # Dependencia del sistema para bzlib.h
