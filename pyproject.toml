@@ -10,7 +10,7 @@ authors = [
 ]
 description = "Template for rDistributed Systems laboratory"
 requires-python = ">=3.10"
-dependencies = ['zeroc-ice','confluent_kafka','kafka-python']
+dependencies = ['zeroc-ice==3.7.5','confluent_kafka','kafka-python']
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
