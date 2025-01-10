@@ -44,7 +44,5 @@ ignored-classes = ["Ice"]
 module = [
   "Ice",
   "RemoteTypes"
-  "remotetypes_ice",
-  "confluent_kafka"
 ]
 ignore_missing_imports = true
